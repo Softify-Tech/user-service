@@ -29,8 +29,8 @@ public class SecurityConfig {
 
     // Comma-separated list of allowed origins, e.g. set CORS_ALLOWED_ORIGINS in Railway
     // Defaults to both local Angular dev-server ports
-    @Value("${cors.allowed-origins:http://localhost:4200,http://localhost:4201}")
-    private String[] allowedOrigins;
+    @Value("${cors.allowed-origins:http://localhost:4200,http://localhost:4201,https://shopping-admin-production.up.railway.app,https://shopping-customer-production.up.railway.app}")
+    private String allowedOriginsRaw;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -50,8 +50,12 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        String[] origins = Arrays.stream(allowedOriginsRaw.split(","))
+                .map(String::trim)
+                .toArray(String[]::new);
+
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        config.setAllowedOrigins(Arrays.asList(origins));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
