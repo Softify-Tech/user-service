@@ -34,4 +34,10 @@ public class Customer {
     private String role = "CUSTOMER";
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // Password reset token — null when no reset is pending
+    @Column(unique = true)
+    private String resetToken;
+
+    private LocalDateTime resetTokenExpiry;
 }

@@ -54,4 +54,21 @@ public class UserController {
                                                    @Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(CustomerResponse.from(userService.update(id, request)));
     }
+
+    // POST /api/users/forgot-password — request a reset link (public)
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        userService.forgotPassword(request.getEmail());
+        // Always return success to prevent email enumeration
+        return ResponseEntity.ok("If that email is registered, a reset link has been sent.");
+    }
+
+    // POST /api/users/reset-password — submit new password with token (public)
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok("Password reset successfully. You can now log in.");
+    }
 }
