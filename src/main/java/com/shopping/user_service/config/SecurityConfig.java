@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                        .requestMatchers("/api/users/register", "/api/users/login",
+                                         "/api/users/forgot-password", "/api/users/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -68,5 +69,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public org.springframework.web.client.RestTemplate restTemplate() {
+        return new org.springframework.web.client.RestTemplate();
     }
 }
