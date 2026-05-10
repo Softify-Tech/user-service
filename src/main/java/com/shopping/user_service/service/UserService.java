@@ -37,7 +37,7 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), customer.getPasswordHash())) {
             throw new RuntimeException("Invalid email or password");
         }
-        String token = jwtService.generateToken(customer.getEmail(), customer.getRole());
+        String token = jwtService.generateToken(customer.getEmail(), customer.getRole(), customer.getCustomerId());
         return new LoginResponse(token, customer.getCustomerId(),
                 customer.getEmail(), customer.getRole());
     }
