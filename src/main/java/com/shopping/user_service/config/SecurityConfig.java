@@ -42,6 +42,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register", "/api/users/login",
                                          "/api/users/forgot-password", "/api/users/reset-password").permitAll()
+                        // Allow internal service-to-service calls to fetch customer data
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/users/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
