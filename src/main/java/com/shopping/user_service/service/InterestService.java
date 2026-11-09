@@ -39,8 +39,14 @@ public class InterestService {
 
         List<String> normalised = normalise(categories);
 
-        // Full replace: an empty list clears every interest
+        // Full replace: an empty list clears every interest.
+        // The flush is required, not tidiness: deleteByCustomerId is a derived delete, so it
+        // only queues em.remove and the DELETEs would otherwise run at commit, while
+        // CustomerInterest uses IDENTITY ids, which makes every INSERT run immediately. A
+        // category present in both the stored and the new list would then be inserted while
+        // its old row still exists and violate uq_customer_interest on (customer_id, category).
         interestRepository.deleteByCustomerId(customerId);
+        interestRepository.flush();
 
         List<CustomerInterest> rows = new ArrayList<>();
         for (String category : normalised) {
@@ -51,7 +57,9 @@ public class InterestService {
         }
         interestRepository.saveAll(rows);
 
-        return normalised.stream().sorted().toList();
+        // Sorted case-insensitively so this response orders the list the same way the
+        // GET does, which reads it back through MySQL's case-insensitive collation.
+        return normalised.stream().sorted(String.CASE_INSENSITIVE_ORDER).toList();
     }
 
     // Trim, drop blanks, drop duplicates case-insensitively keeping the first occurrence,
