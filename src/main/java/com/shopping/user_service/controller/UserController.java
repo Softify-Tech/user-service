@@ -1,12 +1,14 @@
 package com.shopping.user_service.controller;
 
 import com.shopping.user_service.dto.*;
+import com.shopping.user_service.service.InterestService;
 import com.shopping.user_service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserService     userService;
+    private final InterestService interestService;
 
     // POST /api/users/register
     @PostMapping("/register")
@@ -70,5 +73,29 @@ public class UserController {
             @Valid @RequestBody ResetPasswordRequest request) {
         userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok("Password reset successfully. You can now log in.");
+    }
+
+    // ── Interests ─────────────────────────────────────────────────────────────
+    // SecurityConfig needs NO change for these two routes: its permitAll rule for
+    // GET /api/users/* uses a single '*', which matches one path segment only, so
+    // /api/users/{id}/interests already falls through to anyRequest().authenticated().
+
+    // GET /api/users/{id}/interests
+    @GetMapping("/{id}/interests")
+    public ResponseEntity<InterestsResponse> getInterests(@PathVariable Long id,
+                                                          Authentication authentication) {
+        List<String> categories = interestService.getInterests(id, authentication.getName());
+        return ResponseEntity.ok(InterestsResponse.of(id, categories));
+    }
+
+    // PUT /api/users/{id}/interests — full replace
+    @PutMapping("/{id}/interests")
+    public ResponseEntity<InterestsResponse> replaceInterests(
+            @PathVariable Long id,
+            @Valid @RequestBody InterestsRequest request,
+            Authentication authentication) {
+        List<String> categories = interestService.replaceInterests(
+                id, request.getCategories(), authentication.getName());
+        return ResponseEntity.ok(InterestsResponse.of(id, categories));
     }
 }
